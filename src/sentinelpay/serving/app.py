@@ -16,23 +16,49 @@ from sentinelpay.serving.feature_store import OnlineVelocityStore
 ARTIFACTS_DIR = pathlib.Path("artifacts")
 
 
+from pydantic import BaseModel, ConfigDict, Field
+
+
 class TransactionRequest(BaseModel):
-    TransactionID: int = Field(..., example=3577539)
-    TransactionAmt: float = Field(..., gt=0, example=485.50)
-    ProductCD: str = Field(default="W", example="C")
-    card1: int = Field(..., example=13926)
-    card2: float | None = Field(default=150.0, example=500.0)
-    card3: float | None = Field(default=150.0, example=185.0)
-    card4: str | None = Field(default="visa", example="visa")
-    card5: float | None = Field(default=226.0, example=137.0)
-    card6: str | None = Field(default="debit", example="credit")
-    addr1: float | None = Field(default=315.0, example=299.0)
-    addr2: float | None = Field(default=87.0, example=87.0)
-    dist1: float | None = Field(default=None, example=120.0)
-    P_emaildomain: str | None = Field(default="gmail.com", example="gmail.com")
-    R_emaildomain: str | None = Field(default=None, example="anonymous.de")
-    DeviceType: str | None = Field(default="desktop", example="mobile")
-    DeviceInfo: str | None = Field(default="Windows", example="SM-G960U")
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "TransactionID": 3577539,
+                "TransactionAmt": 485.50,
+                "ProductCD": "C",
+                "card1": 13926,
+                "card2": 500.0,
+                "card3": 185.0,
+                "card4": "visa",
+                "card5": 137.0,
+                "card6": "credit",
+                "addr1": 299.0,
+                "addr2": 87.0,
+                "dist1": 120.0,
+                "P_emaildomain": "gmail.com",
+                "R_emaildomain": "anonymous.de",
+                "DeviceType": "mobile",
+                "DeviceInfo": "SM-G960U",
+            }
+        }
+    )
+
+    TransactionID: int
+    TransactionAmt: float = Field(..., gt=0)
+    ProductCD: str = "W"
+    card1: int
+    card2: float | None = 150.0
+    card3: float | None = 150.0
+    card4: str | None = "visa"
+    card5: float | None = 226.0
+    card6: str | None = "debit"
+    addr1: float | None = 315.0
+    addr2: float | None = 87.0
+    dist1: float | None = None
+    P_emaildomain: str | None = "gmail.com"
+    R_emaildomain: str | None = None
+    DeviceType: str | None = "desktop"
+    DeviceInfo: str | None = "Windows"
 
 
 class ShapReason(BaseModel):
