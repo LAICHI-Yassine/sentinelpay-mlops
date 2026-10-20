@@ -1,0 +1,65 @@
+{
+  "reference_rows": 88581,
+  "current_rows": 88581,
+  "reference_fraud_rate": 0.0343,
+  "current_fraud_rate": 0.0348,
+  "drifted_features_count": 4,
+  "drifted_features": [
+    "TransactionAmt",
+    "tx_amt_log",
+    "card_tx_count_1h",
+    "amt_to_mean_24h_ratio"
+  ],
+  "drift_share": 0.5,
+  "trigger_retraining": true,
+  "features": {
+    "TransactionAmt": {
+      "psi": 1.42,
+      "ks_statistic": 0.5112,
+      "ks_p_value": 0.0,
+      "drift_detected": true
+    },
+    "tx_amt_log": {
+      "psi": 1.42,
+      "ks_statistic": 0.5112,
+      "ks_p_value": 0.0,
+      "drift_detected": true
+    },
+    "card_tx_count_1h": {
+      "psi": 7.9586,
+      "ks_statistic": 0.9551,
+      "ks_p_value": 0.0,
+      "drift_detected": true
+    },
+    "card_amt_sum_1h": {
+      "psi": 0.0038,
+      "ks_statistic": 0.0228,
+      "ks_p_value": 2.32e-20,
+      "drift_detected": false
+    },
+    "card_tx_count_24h": {
+      "psi": 0.0142,
+      "ks_statistic": 0.0459,
+      "ks_p_value": 1.43e-81,
+      "drift_detected": false
+    },
+    "card_amt_mean_24h": {
+      "psi": 0.0032,
+      "ks_statistic": 0.0167,
+      "ks_p_value": 3.37e-11,
+      "drift_detected": false
+    },
+    "amt_to_mean_24h_ratio": {
+      "psi": 0.5094,
+      "ks_statistic": 0.3066,
+      "ks_p_value": 0.0,
+      "drift_detected": true
+    },
+    "null_feature_count": {
+      "psi": 0.0164,
+      "ks_statistic": 0.0455,
+      "ks_p_value": 4.23e-80,
+      "drift_detected": false
+    }
+  }
+}

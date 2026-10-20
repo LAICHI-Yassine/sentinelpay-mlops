@@ -7,7 +7,6 @@ __pycache__/
 mlruns/
 mlartifacts/
 *.onnxmlflow.db
-artifacts/
 data/raw/*.csv
 data/raw/*.parquet
 data/raw/*.zip

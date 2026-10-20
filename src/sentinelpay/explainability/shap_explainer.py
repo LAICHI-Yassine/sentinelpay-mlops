@@ -44,8 +44,9 @@ class RealTimeFraudExplainer:
         else:
             sv = shap_values[0]
 
-        # Sort features by highest positive contribution toward fraud
-        top_indices = np.argsort(sv)[::-1][:top_k]
+        # Sort features by highest positive contribution toward fraud, excluding unprovided (-999) fields
+        valid_indices = [i for i in np.argsort(sv)[::-1] if float(x_row[0, int(i)]) != -999.0]
+        top_indices = valid_indices[:top_k]
 
         reasons = []
         for idx in top_indices:

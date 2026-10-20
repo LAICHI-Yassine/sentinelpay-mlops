@@ -9,14 +9,34 @@
 
 An end-to-end, production-grade **Real-Time Payment Fraud Detection & MLOps Engine** trained and evaluated on **590,540 real e-commerce transactions** from the **IEEE-CIS Fraud Detection** benchmark.
 
-Designed for strict FinTech production constraints: **zero temporal data leakage**, **sub-millisecond C++ inference via ONNX Runtime**, **real-time Redis sliding-window velocity state**, **local TreeSHAP compliance explanations**, and **automated PSI/KS drift monitoring**.
+Engineered for strict FinTech production constraints: **zero temporal data leakage**, **sub-millisecond C++ inference via ONNX Runtime (`0.103 ms`)**, **real-time Redis sliding-window velocity state**, **local TreeSHAP compliance explanations**, and **automated PSI/KS covariate drift monitoring**.
+
+---
+
+## Enterprise Risk & MLOps Command Center (Live Showcase)
+
+### 1. High-Risk Account Takeover (ATO) — `BLOCK // P(FRAUD) = 77.81%`
+Cross-border high-value digital transaction (`$2,950.00`, `ProductCD = C`, `card3 = 185.0`, `protonmail.com` $\rightarrow$ `anonymous.ru`) immediately intercepted with real-time **TreeSHAP** log-odds attributions:
+![Block ATO Attack](docs/images/03_block_ato_attack.png)
+
+### 2. Grey-Zone Cross-Domain Anomaly — `REVIEW // P(FRAUD) = 48.80%`
+Medium-ticket mobile transaction (`$310.00`, mismatched email domains `yahoo.com` $\rightarrow$ `outlook.com`, `180 km` IP distance) routed to step-up 3D-Secure verification (`0.1526 <= P(Fraud) < 0.50`):
+![Review Greyzone](docs/images/02_review_greyzone.png)
+
+### 3. Legitimate Everyday Retail Purchase — `APPROVE // P(FRAUD) = 13.07%`
+Low-risk domestic debit card purchase (`$38.50`, `ProductCD = W`, matching `gmail.com` domains) approved seamlessly below the `15.26%` F2 optimal decision threshold:
+![Approve Domestic](docs/images/01_approve_domestic.png)
+
+### 4. Real-Time Counterfactual Sensitivity Analysis — `77.81% -> 25.45%`
+Modifying the blocked ATO vector to a domestic card country (`card3 = 150.0`), standard web product (`ProductCD = W`), and `$45.00` ticket dynamically drops risk by **52.36 percentage points** in real time:
+![Counterfactual Sensitivity](docs/images/04_counterfactual_sensitivity.png)
 
 ---
 
 ## System Architecture
 
 ```text
-[Incoming Transaction JSON]
+[Incoming Payment Telemetry JSON]
          │
          ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -52,28 +72,9 @@ Compiling the trained **LightGBM** model into an **ONNX Runtime** C++ execution 
 ### 2. Out-of-Time Fraud Detection Performance (590,540 Transactions)
 Evaluated on a strict chronological split (zero future leakage across `card_uid` rolling windows):
 * **Validation ROC-AUC:** `0.9133` | **Validation PR-AUC:** `0.5586`
-* **Out-of-Time Test ROC-AUC:** `0.8899` | **Test PR-AUC:** `0.4853` (**14x lift** over `3.48%` baseline fraud rate)
+* **Out-of-Time Test ROC-AUC:** `0.8899` | **Test PR-AUC:** `0.4853` (**14.0x lift** over `3.48%` baseline fraud rate)
 * **Test F2-Score:** `0.5063` (at optimal F2 probability threshold `0.1526`)
 * **Fraud Recall @ 1% False Positive Rate (FPR):** `41.62%`
-
-### 3. Real-Time Explainability (TreeSHAP)
-Every transaction flagged for `REVIEW` or `BLOCK` returns the top 3 mathematical risk factors in `~26 ms`:
-
-```json
-{
-  "transaction_id": 99001,
-  "fraud_probability": 0.6842,
-  "decision": "BLOCK",
-  "threshold_used": 0.1526,
-  "inference_latency_ms": 26.41,
-  "feature_store_backend": "redis",
-  "top_risk_factors": [
-    {"feature": "card3", "feature_value": 185.0, "shap_log_odds_impact": 0.5669},
-    {"feature": "card6", "feature_value": 0.0, "shap_log_odds_impact": 0.5235},
-    {"feature": "card2", "feature_value": 500.0, "shap_log_odds_impact": 0.3552}
-  ]
-}
-```
 
 ---
 
@@ -82,6 +83,7 @@ Every transaction flagged for `REVIEW` or `BLOCK` returns the top 3 mathematical
 ```text
 sentinelpay-mlops/
 ├── .github/workflows/ci_cd.yml        # GitHub Actions CI pipeline (Pytest)
+├── docs/images/                       # Enterprise Risk Console screenshots
 ├── src/sentinelpay/
 │   ├── features/
 │   │   ├── ingest_raw_data.py         # Polars ingestion & table join (IEEE-CIS)
@@ -93,7 +95,8 @@ sentinelpay-mlops/
 │   ├── serving/
 │   │   ├── export_onnx.py             # LightGBM -> ONNX compiler & latency benchmark
 │   │   ├── feature_store.py           # Redis sliding-window velocity store (with fail-safe)
-│   │   └── app.py                     # Async FastAPI + Prometheus telemetry microservice
+│   │   ├── app.py                     # Async FastAPI + Prometheus telemetry microservice
+│   │   └── dashboard.py               # Enterprise Dark-Mode Risk & MLOps Console
 │   └── monitoring/
 │       └── drift_detector.py          # Banking PSI & Kolmogorov-Smirnov drift monitor
 ├── flows/training_pipeline.py         # Prefect end-to-end orchestration flow
@@ -108,16 +111,14 @@ sentinelpay-mlops/
 
 ```bash
 # 1. Install package and dev dependencies
-uv pip install -e ".[dev]" scipy
+uv pip install -e ".[dev]" scipy streamlit plotly requests
 
-# 2. Run the full automated test suite
+# 2. Run the full automated test suite (5 passed)
 pytest -v
 
-# 3. Execute the Prefect MLOps pipeline (Drift check -> Optuna + MLflow -> ONNX export)
-python flows/training_pipeline.py
-
-# 4. Launch the FastAPI + Redis stack via Docker Compose
-docker compose up --build
+# 3. Start the FastAPI + ONNX Engine & Enterprise Console
+uvicorn sentinelpay.serving.app:app --port 8000
+streamlit run src/sentinelpay/serving/dashboard.py
 ```
 
 ---
